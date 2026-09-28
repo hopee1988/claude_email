@@ -14,10 +14,9 @@ const DIR = path.dirname(fileURLToPath(import.meta.url));
 const REF = 'CSM-ME-PLC-2026-0928';
 const img = (n) => 'data:image/jpeg;base64,' + fs.readFileSync(path.join(DIR, 'img', `p${n}.jpg`)).toString('base64');
 
-// [min, max] in USD — sums to 45.000 / 75.000
-const PRICES = [[5000, 8000], [12000, 20000], [6000, 11000], [6000, 10000], [5000, 9000], [6000, 9000], [4000, 6000], [1000, 2000]];
-const sum = (i) => PRICES.reduce((a, p) => a + p[i], 0);
-if (sum(0) !== 45000 || sum(1) !== 75000) throw new Error('price table does not sum to range');
+const BUDGET = [45000, 75000]; // USD, excl. VAT
+const CUSTOMER = 'Azimut Shipping';
+const VESSEL = 'October 29';
 
 const T = {
   tr: {
@@ -26,12 +25,12 @@ const T = {
     kicker: 'CRESCENT STAR MARINE',
     title: 'Ana Makine PLC & HMI<br>Alarm İzleme Sistemi',
     subtitle: 'Ön Fiyat Teklifi — Bilgilendirme Formatı',
-    meta: [['Teklif No', REF], ['Tarih', '28.09.2026'], ['Müşteri', '<span class="fill"></span>'], ['Gemi / IMO', '<span class="fill"></span>'],
+    meta: [['Teklif No', REF], ['Tarih', '28.09.2026'], ['Müşteri', CUSTOMER], ['Gemi', VESSEL],
       ['Hazırlayan', 'Şükrü Umut Sanlı — Teknik Departman Direktörü'], ['Para Birimi', 'USD (ABD Doları)']],
     noticeH: 'Önemli Bilgilendirme',
     notice: 'Bu doküman <b>bilgilendirme amaçlı bir ön tekliftir, final teklif değildir.</b> Belirtilen fiyat aralığı, <b>sizin istekleriniz doğrultusunda</b> ve sistem kapsamına göre değişiklik gösterecektir. Nihai fiyat; gemide yapılacak keşif ve kapsamın netleştirilmesinin ardından final teklif ile bildirilecektir.',
-    dear: 'Sayın Yetkili,',
-    intro: 'Geminizin ana makinesine yönelik PLC tabanlı alarm, izleme ve kontrol sisteminin (PLC + HMI) tasarımı, pano imalatı, yazılımı ve devreye alınması için hazırladığımız ön fiyat bilgilendirmesini bilgilerinize sunarız. Önerilen sistem; Siemens SIMATIC PLC altyapısı, makine kontrol odası (ECR) dokunmatik HMI panelleri ve çift monitörlü SCADA iş istasyonundan oluşmaktadır.',
+    dear: `Sayın ${CUSTOMER} Yetkilileri,`,
+    intro: `${VESSEL} gemisinin ana makinesine yönelik PLC tabanlı alarm, izleme ve kontrol sisteminin (PLC + HMI) tasarımı, pano imalatı, yazılımı ve devreye alınması için hazırladığımız ön fiyat bilgilendirmesini bilgilerinize sunarız. Önerilen sistem; Siemens SIMATIC PLC altyapısı, makine kontrol odası (ECR) dokunmatik HMI panelleri ve çift monitörlü SCADA iş istasyonundan oluşmaktadır.`,
     stats: [['Tahmini Bütçe', '45.000 – 75.000 USD', 'KDV hariç'], ['Platform', 'Siemens SIMATIC', 'PLC + dokunmatik HMI'], ['Kapsam', 'Ana Makine + Yardımcılar', 'G/B, DG, pompalar, tanklar…']],
     heroCap: 'ECR SCADA iş istasyonu — ana makine mimik ekranı (sol) ve jeneratör DG1 alarm sayfası (sağ). Örnek sistem ekranı.',
     s1: 'Sistem Ekranları', s1k: 'ÖRNEK ARAYÜZLER',
@@ -50,10 +49,8 @@ const T = {
       ['Devreye Alma & Test', 'Montaj süpervizyonu, loop testleri, FAT / SAT, klas sörveyi sırasında destek.'],
       ['Eğitim & Dokümantasyon', 'Personel eğitimi, as-built çizimler, kullanım kılavuzu ve program yedekleri.']],
     s3: 'Fiyatlandırma', s3k: 'TAHMİNİ BÜTÇE',
-    thItem: 'Kalem', thRange: 'Tahmini Aralık (USD)',
-    items: ['Mühendislik, proje tasarımı ve dokümantasyon', 'PLC donanımı (CPU, I/O modülleri, güç kaynağı, UPS)', 'HMI dokunmatik panel(ler)', 'PLC panosu imalatı ve iç kablolama', 'ECR SCADA iş istasyonu (PC, monitörler, yazılım)', 'PLC & HMI yazılım geliştirme', 'Montaj süpervizyonu, devreye alma ve testler', 'Eğitim ve teslim dokümanları'],
     total: 'Toplam Tahmini Bütçe', totalNote: 'KDV hariç',
-    priceNote: 'Kalem bazlı aralıklar bilgilendirme amaçlıdır. Fiyatlar, sizin istekleriniz doğrultusunda değişiklik gösterecek olup nihai dağılım final teklifte belirlenecektir.',
+    priceNote: 'Belirtilen aralık, Bölüm 2’deki teklif kapsamını içerir. Fiyatlar, sizin istekleriniz doğrultusunda değişiklik gösterecek olup nihai fiyat final teklifte belirlenecektir.',
     s4: 'Fiyata Dahil Olmayanlar',
     excl: ['Değiştirilmesi gereken <b>sensörler</b>, transmitterler, sıcaklık elemanları (PT100 / termokupl), basınç ve seviye şalterleri gibi saha ekipmanları (varsa).',
       'Değiştirilmesi / yenilenmesi gereken <b>kablolar</b> (varsa).',
@@ -73,12 +70,12 @@ const T = {
     kicker: 'CRESCENT STAR MARINE',
     title: 'Main Engine PLC & HMI<br>Alarm Monitoring System',
     subtitle: 'Budgetary Quotation — For Information Only',
-    meta: [['Quotation No', REF], ['Date', '28 Sep 2026'], ['Customer', '<span class="fill"></span>'], ['Vessel / IMO', '<span class="fill"></span>'],
+    meta: [['Quotation No', REF], ['Date', '28 Sep 2026'], ['Customer', CUSTOMER], ['Vessel', VESSEL],
       ['Prepared by', 'Şükrü Umut Sanlı — Technical Department Director'], ['Currency', 'USD (US Dollar)']],
     noticeH: 'Important Notice',
     notice: 'This document is a <b>budgetary quotation for information purposes only and is not a final offer.</b> The price range stated will vary <b>according to your requirements</b> and the final system scope. The final price will be submitted in a formal quotation after an on-board survey and scope confirmation.',
-    dear: 'Dear Sir / Madam,',
-    intro: 'Please find below our budgetary pricing for the design, cabinet manufacturing, software and commissioning of a PLC-based alarm, monitoring and control system (PLC + HMI) for your vessel’s main engine. The proposed system is built on Siemens SIMATIC PLC hardware, touch-screen HMI panels in the engine control room (ECR) and a dual-monitor SCADA workstation.',
+    dear: `Dear ${CUSTOMER} Team,`,
+    intro: `Please find below our budgetary pricing for the design, cabinet manufacturing, software and commissioning of a PLC-based alarm, monitoring and control system (PLC + HMI) for the main engine of your vessel ${VESSEL}. The proposed system is built on Siemens SIMATIC PLC hardware, touch-screen HMI panels in the engine control room (ECR) and a dual-monitor SCADA workstation.`,
     stats: [['Estimated Budget', 'USD 45,000 – 75,000', 'excluding VAT'], ['Platform', 'Siemens SIMATIC', 'PLC + touch HMI'], ['Scope', 'Main Engine + Auxiliaries', 'G/B, DG, pumps, tanks…']],
     heroCap: 'ECR SCADA workstation — main engine mimic (left) and generator DG1 alarm page (right). Example system screens.',
     s1: 'System Screens', s1k: 'EXAMPLE INTERFACES',
@@ -97,10 +94,8 @@ const T = {
       ['Commissioning & Testing', 'Installation supervision, loop tests, FAT / SAT, support during class survey.'],
       ['Training & Documentation', 'Crew training, as-built drawings, operating manual and program backups.']],
     s3: 'Pricing', s3k: 'ESTIMATED BUDGET',
-    thItem: 'Item', thRange: 'Estimated Range (USD)',
-    items: ['Engineering, system design and documentation', 'PLC hardware (CPU, I/O modules, power supply, UPS)', 'HMI touch panel(s)', 'PLC cabinet manufacturing and internal wiring', 'ECR SCADA workstation (PC, monitors, software)', 'PLC & HMI software development', 'Installation supervision, commissioning and testing', 'Training and handover documentation'],
     total: 'Total Estimated Budget', totalNote: 'excluding VAT',
-    priceNote: 'Item ranges are indicative. Prices will vary according to your requirements; the final breakdown will be confirmed in the final quotation.',
+    priceNote: 'The stated range covers the scope of supply in Section 2. Prices will vary according to your requirements; the final price will be confirmed in the final quotation.',
     s4: 'Not Included in the Price',
     excl: ['Any <b>sensors</b>, transmitters, temperature elements (PT100 / thermocouple), pressure and level switches or other field equipment that need replacing.',
       'Any <b>cables</b> that need replacing / renewing.',
@@ -179,16 +174,10 @@ figcaption{font-size:8.5pt;color:var(--muted);margin-top:1.5mm;font-style:italic
 .card .i{width:7mm;height:7mm;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex:none;margin-top:.5mm}
 .card h3{font-family:'Carlito';font-weight:700;font-size:10.5pt;color:var(--navy)}
 .card p{font-size:8.8pt;color:var(--muted);margin:.3mm 0 0;line-height:1.35}
-table{width:100%;border-collapse:collapse;font-size:10pt;break-inside:avoid}
-th{background:var(--navy);color:#fff;text-align:left;font-weight:700;font-size:8pt;letter-spacing:1.2px;text-transform:uppercase;padding:2mm 3.5mm}
-td{padding:1.25mm 3.5mm;border-bottom:1px solid var(--line)}
-tr:nth-child(even) td{background:#F7FAFC}
-td.n{width:9mm;color:var(--teal);font-weight:700}
-td.r,th.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.total{display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;border-radius:0 0 6px 6px;padding:2.2mm 5mm}
-.total .k{font-family:'URW Bookman',serif;font-weight:600;font-size:12.5pt}
+.total{display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;border-radius:6px;border-left:5px solid var(--orange);padding:6mm 7mm}
+.total .k{font-family:'URW Bookman',serif;font-weight:600;font-size:14pt}
 .total .v{text-align:right}
-.total .v b{display:block;font-family:'URW Bookman',serif;font-weight:600;font-size:15.5pt;color:var(--orange);white-space:nowrap}
+.total .v b{display:block;font-family:'URW Bookman',serif;font-weight:600;font-size:22pt;color:var(--orange);white-space:nowrap}
 .total .v span{font-size:8.5pt;letter-spacing:1.4px;text-transform:uppercase;color:var(--pale)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
 ul.x,ul.f{list-style:none;margin:0;padding:0}
@@ -243,9 +232,7 @@ ul.f li:before{content:'';position:absolute;left:0;top:2.2mm;width:2.2mm;height:
 
   <section class="sec pb">
     <div class="sk">${t.s3k}</div><h2><span class="num">3</span>${t.s3}</h2>
-    <table><thead><tr><th>#</th><th>${t.thItem}</th><th class="r">${t.thRange}</th></tr></thead>
-    <tbody>${t.items.map((it, i) => `<tr><td class="n">${String(i + 1).padStart(2, '0')}</td><td>${it}</td><td class="r">${range(PRICES[i])}</td></tr>`).join('')}</tbody></table>
-    <div class="total"><div class="k">${t.total}</div><div class="v"><b>${range([sum(0), sum(1)])} USD</b><span>${t.totalNote}</span></div></div>
+    <div class="total"><div class="k">${t.total}</div><div class="v"><b>${range(BUDGET)} USD</b><span>${t.totalNote}</span></div></div>
     <div class="note">${t.priceNote}</div>
   </section>
 
