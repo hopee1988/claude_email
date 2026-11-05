@@ -14,9 +14,31 @@ def _base(dom):
     b = p[-3] if (len(p) >= 3 and len(p[-2]) <= 3) else (p[-2] if len(p) >= 2 else p[0])
     return re.sub(r'[^a-z0-9]', '', b.lower())
 
+_b1 = {o['domain']: o for o in json.load(open('work/bimco.json'))}
+for _o in json.load(open('work/bimco2.json')):
+    if _o.get('bimco') or _o['domain'] not in _b1: _b1[_o['domain']] = _o
+
+_EV = {
+ 'jadroplov.hr': "Ana sayfada BIMCO logosu (img alt/title: 'Bimco')",
+ 'hollandhellenic.gr': 'Ana sayfada BIMCO logosu (bimco.webp görseli)',
+ 'altamarpanama.com': "Sertifikalar bölümünde BIMCO member logosu – 'Member since 2021'",
+ 'emco-shipping.com': "Ana sayfada bimco.org'a link + BIMCO logosu ve 'Bimco' başlığı",
+}
+
+def _bimco(dom, live):
+    o = _b1.get(dom)
+    if o and o.get('bimco'):
+        return ('SİTESİNDE BIMCO GEÇİYOR – muhtemel üye', _EV.get(dom, o.get('evidence', ''))[:300], o.get('page', ''))
+    if not live:
+        return ('Kontrol edilemedi – site/alan adı ölü', '', '')
+    return ('Sitesinde BIMCO referansı yok', '', '')
+
 for _r in rows:                      # firma adı alan adıyla uyuşmuyorsa alan adından türet
     _b = _base(_r['Alan adı'])
     _r['Dokümandaki ad/açıklama'] = _r['Firma']
+    _st2, _ev, _pg = _bimco(_r['Alan adı'], _r['_live'])
+    _r['BIMCO durumu'] = _st2; _r['BIMCO kanıtı (site metni)'] = _ev; _r['BIMCO kanıt sayfası'] = _pg
+    _r['_bim'] = _st2.startswith('SİTESİNDE')
     if _b and _b not in _norm(_r['Firma']) and not (len(_b) > 5 and _b[:6] in _norm(_r['Firma'])):
         _r['Firma'] = fallback_name(_r['Alan adı'])
 RANK = {'ok': 3, 'part': 2, 'unk': 1, 'bad': 0}
@@ -35,7 +57,8 @@ for r in sorted(rows, key=lambda x: (x['Ülke'] or 'ZZZ', x['Firma'].lower())):
                          'Sitede bulunan diğer e-postalar': r['Sitede bulunan diğer e-postalar'],
                          'Site başlığı': r['Site başlığı'], 'Alan adı': k,
                          'Kaynak metin (dokümandan)': r['Kaynak metin (dokümandan)'], 'st': 'bad', '_live': r['_live'],
-                         'doc': r['Dokümandaki ad/açıklama']})
+                         'doc': r['Dokümandaki ad/açıklama'], 'bim': r['BIMCO durumu'],
+                         'bev': r['BIMCO kanıtı (site metni)'], 'bpg': r['BIMCO kanıt sayfası'], '_bim': r['_bim']})
     (c['ch'] if r['_mt'].startswith('Chartering') else c['op']).append(r['E-posta'])
     for p in r['_phones']:
         if p not in c['ph']: c['ph'].append(p)
@@ -53,7 +76,8 @@ for c in g.values():
                   'Web sitesi durumu': c['Web sitesi durumu'], 'E-posta doğrulama': VERTXT[c['st']],
                   'Sitede bulunan diğer e-postalar': c['Sitede bulunan diğer e-postalar'],
                   'Site başlığı': c['Site başlığı'], 'Alan adı': c['Alan adı'],
-                  'Dokümandaki ad/açıklama': c['doc'], 'Kaynak metin (dokümandan)': c['Kaynak metin (dokümandan)'],
+                  'BIMCO durumu': c['bim'], 'BIMCO kanıtı (site metni)': c['bev'], 'BIMCO kanıt sayfası': c['bpg'],
+                  '_bim': c['_bim'], 'Dokümandaki ad/açıklama': c['doc'], 'Kaynak metin (dokümandan)': c['Kaynak metin (dokümandan)'],
                   '_st': c['st'], '_live': c['_live'],
                   '_mt': 'Chartering + Operation' if (c['ch'] and c['op']) else ('Chartering' if c['ch'] else 'Operation')})
 
@@ -70,13 +94,15 @@ MTF = {'Chartering': PatternFill('solid', fgColor='E4DFEC'), 'Operation': Patter
 
 C1 = ['Firma', 'Ülke', 'Mail tipi', 'Chartering e-posta', 'Operation e-posta', 'Telefon(lar)',
       'Rol (sektördeki konumu)', 'Sektör / ne iş yapıyor', 'Web sitesi', 'Web sitesi durumu',
-      'E-posta doğrulama', 'Sitede bulunan diğer e-postalar', 'Site başlığı', 'Alan adı',
+      'E-posta doğrulama', 'BIMCO durumu', 'BIMCO kanıtı (site metni)', 'BIMCO kanıt sayfası',
+      'Sitede bulunan diğer e-postalar', 'Site başlığı', 'Alan adı',
       'Dokümandaki ad/açıklama', 'Kaynak metin (dokümandan)']
-W1 = [34, 13, 20, 38, 38, 28, 22, 42, 32, 30, 42, 38, 26, 24, 40, 60]
+W1 = [34, 13, 20, 38, 38, 28, 22, 42, 32, 30, 42, 34, 50, 34, 38, 26, 24, 40, 60]
 C2 = ['Firma', 'Ülke', 'Mail tipi', 'E-posta', 'Departman (mail eki)', 'Telefon(lar)', 'Rol (sektördeki konumu)',
       'Sektör / ne iş yapıyor', 'Web sitesi', 'Web sitesi durumu', 'E-posta doğrulama',
-      'Sitede bulunan diğer e-postalar', 'Alan adı', 'Dokümandaki ad/açıklama', 'Kaynak metin (dokümandan)']
-W2 = [34, 13, 20, 38, 20, 26, 22, 42, 32, 30, 42, 38, 24, 40, 60]
+      'BIMCO durumu', 'Sitede bulunan diğer e-postalar', 'Alan adı', 'Dokümandaki ad/açıklama',
+      'Kaynak metin (dokümandan)']
+W2 = [34, 13, 20, 38, 20, 26, 22, 42, 32, 30, 42, 34, 38, 24, 40, 60]
 
 def sheet(name, data, cols, widths, title=None):
     ws = wb.create_sheet(name)
@@ -104,6 +130,12 @@ def sheet(name, data, cols, widths, title=None):
             u = row[iu].value
             if u: row[iu].hyperlink = u; row[iu].font = Font(color='0563C1', underline='single', size=10)
         row[im].fill = MTF[r['_mt']]; row[im].alignment = Alignment(horizontal='center')
+        if 'BIMCO durumu' in cols:
+            ib = cols.index('BIMCO durumu')
+            if r.get('_bim'):
+                row[ib].fill = GREEN; row[ib].font = GRNTXT
+            elif r['_st'] != 'bad':
+                row[ib].fill = GREY
     return ws
 
 sheet('FİRMALAR', comps, C1, W1)
@@ -138,6 +170,14 @@ r = block(r, 'DOĞRULAMA (firma bazında)', [
     ('BELİRSİZ – site aktif ama sayfalarda e-posta yok', st['unk']),
     ('DOĞRULANAMADI (KIRMIZI) – site/alan adı yanıt vermiyor', st['bad']),
     ('Web sitesi aktif olan firma', sum(1 for c in comps if c['_live'])),
+])
+r = block(r, 'BIMCO ÜYELİK KONTROLÜ', [
+    ('Sitesinde BIMCO referansı bulunan firma', sum(1 for c in comps if c.get('_bim'))),
+    ('Sitesinde BIMCO referansı olmayan (site aktif)', sum(1 for c in comps if not c.get('_bim') and c['_live'])),
+    ('Kontrol edilemedi – site/alan adı ölü', sum(1 for c in comps if not c.get('_bim') and not c['_live'])),
+    ('NOT', 'BIMCO üye dizini herkese açık değil (üye girişi gerekiyor); bu kolon firmanın KENDİ sitesindeki BIMCO beyanına dayanır.'),
+    ('NOT', 'Referans bulunmaması üye olmadığı anlamına gelmez – çoğu firma üyeliğini sitesinde yazmaz.'),
+    ('KESİN DOĞRULAMA', 'bimco.org üye girişi ile Member Search; erişiminiz varsa liste bu kolona işlenebilir.'),
 ])
 r = block(r, 'RENK KODLARI', [
     ('KIRMIZI satır', 'DOĞRULANAMADI – site/alan adı ölü; mail büyük olasılıkla geri döner'),
